@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../public/styles.css">
+    <link rel="icon" type="image/png" href="./public/favicon.png">
+    <title>Shoe Shelf</title>
+    <script src="../node_modules/handlebars/dist/handlebars.min.js"></script>
+</head>
+
+<body>
+    <div id='app'></div>          
+
+    <script type="text/x-handlebars-template" id='header-partial'>
+        <header>
+        <nav>
+            <ul>
+                {{#if loggedIn}}
+                <li>
+                    <a href="/create" onclick="navigateHandler(event)">Create new offer</a>
+                </li> 
+                {{/if}}
+                <li class="site-logo">Shoe</li>
+                <li>
+                    <a href="/">
+                        <img src="../public/sneakers.png" alt="" onclick="navigateHandler(event)">
+                    </a>
+                </li> 
+                <li class="site-logo">Shelf</li>
+                {{#if loggedIn}}
+                <li>Welcome, {{email}}| 
+                    <a  href="/logout" onclick="navigateHandler(event)">Logout</a>
+                </li>
+                {{/if}}
+            </ul>
+        </nav>
+    </header>
+    </script>
+
+    <script type="text/x-handlebars-template" id='home-template'>
+        {{>header-partial}}
+        <main>
+    {{#if loggedIn}}
+    <div class="shoes">
+        {{#if shoes}}
+        {{#each shoes}}
+        {{>shoe-partial}}
+        {{/each}}
+        {{else}}
+        <p style="font-size: 42px; color:  #FFA000;">No shoes to display. Be the first to create a new offer!</p>
+        {{/if}}
+    </div>
+    {{else}}
+    <div class="container">
+        <div class="about-us">
+            <div>
+                <img src="../public/shoes.jpg" alt="">
+                <img src="../public/shoes2.jpg" alt="">
+            </div>
+            <p>
+                <a href="/register" onclick="navigateHandler(event)">Register Now</a> and Try it!
+            </p>
+        </div>
+    </div>
+    {{/if}}    
+    </main>
+    {{>footer-partial}}
+    </script>
+
+    <script type="text/x-handlebars-template" id='shoe-partial' >
+        <div class="shoe">
+            <img src="{{imageUrl}}">
+            <h3>{{name}}</h3>
+            <a href="/details/{{x}}" onclick="navigateHandler(event)">Buy it for {{price}}</a>
+        </div>
+    </script>
+
+    <script type="text/x-handlebars-template" id='register-template'>
+        {{>header-partial}}
+        <h1>Register</h1>
+            <p class="form-info">Already registered?
+            <a href="/login" onclick="navigateHandler(event)">Login now</a> and have some fun!
+         </p>
+        <form action="" onsubmit="registerSubmitForm(event)">
+            <div>
+                <input type="email" placeholder="Email...">
+            </div>
+            <div>
+                <input type="password" placeholder="Password">
+            </div>
+            <div>
+                <input type="password" placeholder="Re-password">
+            </div>
+            <div>
+                <p class="message"></p>
+               <button>Register</button>
+            </div>
+        </form>
+        {{>footer-partial}}
+    </script>
+
+    <script type="text/x-handlebars-template" id='login-template'>
+        {{>header-partial}}
+        <h1>Login</h1>
+        <p class="form-info">Don't have account?
+            <a href="/register">Register now</a> and fix that!
+        </p>
+        <form action="" onsubmit="loginSubmit(event)">
+            <div>
+                <input type="email" placeholder="Email...">
+            </div>
+
+            <div>
+                <input type="password" placeholder="Password...">
+            </div>
+            <div> 
+                <button>Login</button>
+            </div>
+        </form>
+        {{>footer-partial}}
+    </script>
+
+    <script type="text/x-handlebars-template" id='create-template'>
+        {{>header-partial}}
+        <h1>Create New Offer</h1>
+        <p class="message"></p>
+        <form onsubmit="createNewShoeAsync(event)">
+            <div>
+                <input type="text" placeholder="Name..." name="name">
+            </div>
+            <div>
+                <input type="text" placeholder="Price...">
+            </div>
+            <div>
+                <input type="text" placeholder="Image url...">
+            </div>
+            <div>
+                <textarea placeholder="Give us some description about this offer..."></textarea>
+            </div>
+            <div>
+                <input type="text" placeholder="Brand...">
+            </div>
+            <div>
+                <button>Create</button>
+            </div>
+        </form>
+        {{>footer-partial}}
+    </script>
+
+    <script  type="text/x-handlebars-template" id='edit-template'>
+        {{>header-partial}}
+         <h1>Edit Offer</h1>
+        <p class="message"></p>
+        <form onsubmit="updateShoeInfo(event)">
+            <div>
+                <input type="text" placeholder="Name...">
+            </div>
+            <div>
+                <input type="text" placeholder="Price...">
+            </div>
+            <div>
+                <input type="text" placeholder="Image url...">
+            </div>
+            <div>
+                <textarea placeholder="Give us some description about this offer..."></textarea>
+            </div>
+            <div>
+                <input type="text" placeholder="Brand...">
+            </div>
+            <div>
+                <button>Edit</button>
+            </div>
+        </form>
+        {{>footer-partial}}
+    </script>
+
+    <script type="text/x-handlebars-template" id='details-template'>
+        {{>header-partial}}
+        <div class="offer-details">
+            <h1>{{name}}</h1>
+            <div class="info">
+                <img src="{{imageUrl}}"
+                    alt="">
+                <div class="description">{{description}}
+                    <br>
+                    <br>
+                    <p class="price">{{price}}</p>
+                </div>
+            </div>
+            <div class="actions">
+                {{#if shoeCreator}}
+                <a href="/edit/{{id}}" onclick="navigateHandler(event)">Edit</a>
+                <a href="/delete/{{id}}" onclick="navigateHandler(event)">Delete</a>
+                {{else}}
+                <a href="/buy/{{id}}" onclick="navigateHandler(event)">Buy</a>           
+                {{/if}}
+            </div>
+        </div>
+        {{>footer-partial}}
+    </script>
+
+    <script type="text/x-handlebars-template" id='footer-partial'>
+        <footer>
+            <p><a href="https://softuni.bg">Software University</a> - JS Applications @ 2020</p>
+        </footer>
+    </script>
+    <script src="../scripts.js/services.js"></script>
+    <script src="../scripts.js/router.js"></script>
+    <script src="../scripts.js/register.js"></script>
+    <script src="../scripts.js/login.js"></script>
+</body>
+
+</html>
